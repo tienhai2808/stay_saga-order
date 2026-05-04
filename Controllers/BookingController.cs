@@ -16,6 +16,9 @@ public class BookingController(BookingService bookingService) : ControllerBase
         try
         {
             await _bookingService.PingPropertyAsync(cancellationToken);
+
+            
+
             return Ok(new { message = "property_service is reachable via gRPC" });
         }
         catch (RpcException ex)
