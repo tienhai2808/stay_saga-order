@@ -1,6 +1,22 @@
 @OrderService_HostAddress = http://localhost:5215
+@accessToken = REPLACE_WITH_BEARER_TOKEN
 
 GET {{OrderService_HostAddress}}/bookings/ping
 Accept: application/json
+
+###
+
+POST {{OrderService_HostAddress}}/bookings
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "roomTypeId": "1",
+  "roomCount": 1,
+  "guestCount": 2,
+  "checkIn": "2026-05-20T00:00:00Z",
+  "checkOut": "2026-05-22T00:00:00Z"
+}
 
 ###

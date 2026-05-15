@@ -2,7 +2,10 @@ using OrderService.Services;
 using Grpc.Property;
 using Common.Extensions;
 using Common.Middleware;
+using Microsoft.EntityFrameworkCore;
+using OrderService.Data;
 using OrderService.Providers;
+using OrderService.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddKeycloakJwtAuth(builder.Configuration);
 builder.Services.AddScoped<BookingService>();
 builder.Services.AddScoped<PropertyProvider>();
+builder.Services.AddScoped<BookingRepository>();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Default"),
+        npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__ef_migrations_history")));
 
 var propertyGrpcAddress = builder.Configuration["GrpcClients:PropertyService:Address"];
 if (!Uri.TryCreate(propertyGrpcAddress, UriKind.Absolute, out var propertyGrpcUri))
