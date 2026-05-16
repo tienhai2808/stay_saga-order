@@ -69,8 +69,10 @@ namespace OrderService.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("room_type_id");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -79,7 +81,10 @@ namespace OrderService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("bookings", (string)null);
+                    b.ToTable("bookings", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_bookings_status", "status IN ('pending', 'confirmed', 'cancelled', 'completed')");
+                        });
                 });
 #pragma warning restore 612, 618
         }

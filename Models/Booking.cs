@@ -9,7 +9,7 @@ public class Booking
     public DateTime CheckOut { get; set; }
     public int RoomCount { get; set; }
     public int GuestCount { get; set; }
-    public BookingStatus Status { get; set; }
+    public string Status { get; set; } = BookingStatuses.Pending;
     public decimal Amount { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; }

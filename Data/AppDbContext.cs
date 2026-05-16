@@ -26,7 +26,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         base.OnModelCreating(modelBuilder);
 
         var booking = modelBuilder.Entity<Booking>();
-        booking.ToTable("bookings");
+        booking.ToTable(
+            "bookings",
+            table =>
+            {
+                table.HasCheckConstraint(
+                    "ck_bookings_status",
+                    $"status IN ('{BookingStatuses.Pending}', '{BookingStatuses.Confirmed}', '{BookingStatuses.Cancelled}', '{BookingStatuses.Completed}')"
+                );
+            }
+        );
 
         booking.HasKey(x => x.Id);
         booking.Property(x => x.Id)
@@ -61,8 +70,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         booking.Property(x => x.Status)
             .HasColumnName("status")
-            .HasConversion<int>()
-            .IsRequired();
+            .IsRequired()
+            .HasMaxLength(20)
+            .HasColumnType("character varying(20)");
 
         booking.Property(x => x.Amount)
             .HasColumnName("amount")

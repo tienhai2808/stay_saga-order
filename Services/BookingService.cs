@@ -1,8 +1,10 @@
 using Common.Exceptions;
 using Common.Mappers;
+using DotNetCore.CAP;
 using Grpc.Core;
 using Grpc.Property;
 using IdGen;
+using OrderService.Common;
 using OrderService.Data;
 using OrderService.DTOs;
 using OrderService.Models;
@@ -14,12 +16,16 @@ namespace OrderService.Services;
 public class BookingService(
     IIdGenerator<long> idGenerator,
     PropertyProvider propertyProvider,
-    BookingRepository bookingRepo
+    BookingRepository bookingRepo,
+    AppDbContext dbContext,
+    ICapPublisher capPublisher
 )
 {
     private readonly IIdGenerator<long> _idGenerator = idGenerator;
+    private readonly ICapPublisher _capPublisher = capPublisher;
     private readonly PropertyProvider _propertyProvider = propertyProvider;
     private readonly BookingRepository _bookingRepo = bookingRepo;
+    private readonly AppDbContext _dbContext = dbContext;
 
     public async Task PingPropertyAsync(CancellationToken cancellationToken)
     {
@@ -43,7 +49,7 @@ public class BookingService(
 
         if (checkOutDate <= checkInDate)
             throw new BadRequestException("Check-out must be after check-in");
-        
+
         ReserveResponse response;
         try
         {
@@ -63,21 +69,36 @@ public class BookingService(
 
         try
         {
+            var bookingId = _idGenerator.CreateId();
             var booking = new Booking
             {
-                Id = _idGenerator.CreateId(),
+                Id = bookingId,
                 KeycloakId = keycloakId,
                 RoomTypeId = roomTypeId,
                 CheckIn = DateTime.SpecifyKind(checkInDate, DateTimeKind.Utc),
                 CheckOut = DateTime.SpecifyKind(checkOutDate, DateTimeKind.Utc),
                 RoomCount = dto.RoomCount,
                 GuestCount = dto.GuestCount,
-                Status = BookingStatus.Pending,
+                Status = BookingStatuses.Pending,
                 Amount = (decimal)response.Amount,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15)
             };
 
+            using var transaction = _dbContext.Database.BeginTransaction(_capPublisher, autoCommit: true);
+
             await _bookingRepo.CreateAsync(booking, cancellationToken);
+
+            await _capPublisher.PublishAsync(Constants.BookingCreated, new BookingCreatedEventDto
+            {
+                BookingId = booking.Id,
+                KeycloakId = keycloakId,
+                RoomTypeId = roomTypeId,
+                RoomCount = booking.RoomCount,
+                CheckIn = DateOnly.FromDateTime(booking.CheckIn),
+                CheckOut = DateOnly.FromDateTime(booking.CheckOut),
+                Amount = booking.Amount,
+                OccurredAt = DateTime.UtcNow
+            }, callbackName: null, cancellationToken);
 
             return booking.Id;
         }

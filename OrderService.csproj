@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetCore.CAP" Version="10.0.1" />
+    <PackageReference Include="DotNetCore.CAP.Kafka" Version="10.0.1" />
+    <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="10.0.1" />
     <PackageReference Include="Grpc.Net.ClientFactory" Version="2.80.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />

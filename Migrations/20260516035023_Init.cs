@@ -22,7 +22,7 @@ namespace OrderService.Migrations
                     check_out = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     room_count = table.Column<int>(type: "integer", nullable: false),
                     guest_count = table.Column<int>(type: "integer", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
@@ -31,6 +31,7 @@ namespace OrderService.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_bookings", x => x.id);
+                    table.CheckConstraint("ck_bookings_status", "status IN ('pending', 'confirmed', 'cancelled', 'completed')");
                 });
         }
 

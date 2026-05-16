@@ -4,6 +4,7 @@ using Common.Extensions;
 using Common.Middleware;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
+using OrderService.Extensions;
 using OrderService.Providers;
 using OrderService.Repositories;
 
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default"),
         npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__ef_migrations_history")));
+builder.Services.AddOrderMessaging(builder.Configuration);
 
 var propertyGrpcAddress = builder.Configuration["GrpcClients:PropertyService:Address"];
 if (!Uri.TryCreate(propertyGrpcAddress, UriKind.Absolute, out var propertyGrpcUri))
