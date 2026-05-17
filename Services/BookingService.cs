@@ -1,10 +1,11 @@
+using Common.Constants;
+using Common.Events;
 using Common.Exceptions;
 using Common.Mappers;
 using DotNetCore.CAP;
 using Grpc.Core;
 using Grpc.Property;
 using IdGen;
-using OrderService.Common;
 using OrderService.Data;
 using OrderService.DTOs;
 using OrderService.Models;
@@ -88,7 +89,7 @@ public class BookingService(
 
             await _bookingRepo.CreateAsync(booking, cancellationToken);
 
-            await _capPublisher.PublishAsync(Constants.BookingCreated, new BookingCreatedEventDto
+            await _capPublisher.PublishAsync(TopicConstants.BookingCreatedTopic, new BookingCreatedEvent
             {
                 BookingId = booking.Id,
                 KeycloakId = keycloakId,

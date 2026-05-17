@@ -7,6 +7,7 @@ using OrderService.Data;
 using OrderService.Extensions;
 using OrderService.Providers;
 using OrderService.Repositories;
+using Common.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,12 +22,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default"),
         npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__ef_migrations_history")));
-builder.Services.AddOrderMessaging(builder.Configuration);
+builder.Services.AddProducerMessaging(builder.Configuration);
 
 var propertyGrpcAddress = builder.Configuration["GrpcClients:PropertyService:Address"];
 if (!Uri.TryCreate(propertyGrpcAddress, UriKind.Absolute, out var propertyGrpcUri))
 {
-    throw new InvalidOperationException("GrpcClients:PropertyService:Address must be a valid absolute URI.");
+    throw new InternalServerException("GrpcClients:PropertyService:Address must be a valid absolute URI.");
 }
 
 builder.Services.AddGrpcClient<PropertyService.PropertyServiceClient>((_, clientOptions) =>
